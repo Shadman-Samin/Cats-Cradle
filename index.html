@@ -7,9 +7,13 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #000;
+    background: #f8fafc;
+    background-image: 
+      linear-gradient(rgba(200, 220, 240, 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200, 220, 240, 0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
     overflow: hidden;
-    font-family: 'Courier New', monospace;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
   /* Hidden full-screen webcam (used by MediaPipe only) */
   #video-container {
@@ -28,28 +32,25 @@
   /* ── Camera PiP preview ── */
   #cam-pip {
     position: fixed;
-    top: 18px;
-    left: 18px;
+    top: 24px;
+    left: 24px;
     z-index: 10;
-    width: 192px;
-    height: 108px;
-    border-radius: 10px;
+    width: 220px;
+    height: 124px;
+    border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(0, 255, 200, 0.25);
-    box-shadow:
-      0 0 0 1px rgba(0,0,0,0.6),
-      0 0 18px rgba(0, 255, 200, 0.15),
-      0 4px 24px rgba(0,0,0,0.7);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     cursor: grab;
     user-select: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
   #cam-pip:hover {
-    border-color: rgba(0, 255, 200, 0.55);
+    transform: translateY(-2px);
     box-shadow:
-      0 0 0 1px rgba(0,0,0,0.6),
-      0 0 28px rgba(0, 255, 200, 0.3),
-      0 4px 28px rgba(0,0,0,0.8);
+      0 12px 48px rgba(0, 0, 0, 0.15),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.4);
   }
   #cam-pip:active { cursor: grabbing; }
   #cam-pip video {
@@ -58,57 +59,53 @@
     object-fit: cover;
     transform: scaleX(-1);
     display: block;
+    opacity: 0.85;
   }
   /* Scanline tint overlay on pip */
   #cam-pip::after {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(rgba(0,255,200,0.04) 0%, transparent 50%, rgba(0,0,30,0.18) 100%),
-      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px);
+    background: linear-gradient(rgba(255,255,255,0.1) 0%, transparent 100%);
     pointer-events: none;
-    border-radius: 10px;
   }
   /* Corner label */
   #cam-pip-label {
     position: absolute;
-    bottom: 6px;
-    left: 8px;
-    color: rgba(0, 255, 200, 0.55);
-    font-size: 8px;
-    letter-spacing: 0.22em;
+    bottom: 10px;
+    left: 12px;
+    color: #475569;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    font-family: 'Courier New', monospace;
     pointer-events: none;
     z-index: 1;
-    text-shadow: 0 0 8px rgba(0,255,200,0.6);
   }
   /* Toggle button */
   #cam-pip-toggle {
     position: absolute;
-    top: 5px;
-    right: 6px;
-    width: 16px;
-    height: 16px;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid rgba(0,255,200,0.3);
-    border-radius: 4px;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 6px;
     cursor: pointer;
     z-index: 11;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s, border-color 0.2s;
+    transition: all 0.2s;
   }
   #cam-pip-toggle:hover {
-    background: rgba(0,255,200,0.15);
-    border-color: rgba(0,255,200,0.7);
+    background: rgba(255,255,255,0.8);
   }
   #cam-pip-toggle svg { display: block; }
   #cam-pip.collapsed {
-    height: 24px;
-    width: 120px;
+    height: 36px;
+    width: 140px;
   }
   #cam-pip.collapsed video,
   #cam-pip.collapsed #cam-pip-label { opacity: 0; }
@@ -117,13 +114,13 @@
     display: none;
     position: absolute;
     top: 50%;
-    left: 10px;
+    left: 14px;
     transform: translateY(-50%);
-    color: rgba(0,255,200,0.55);
-    font-size: 8px;
-    letter-spacing: 0.22em;
+    color: #475569;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    font-family: 'Courier New', monospace;
     pointer-events: none;
     white-space: nowrap;
   }
@@ -132,6 +129,7 @@
     position: fixed;
     inset: 0;
     z-index: 1;
+    will-change: transform;
   }
   #p5canvas {
     position: absolute;
@@ -143,81 +141,89 @@
     width: 100%; height: 100%;
     z-index: 2;
     pointer-events: none;
+    background: radial-gradient(circle at center, transparent 0%, rgba(248, 250, 252, 0.4) 100%);
   }
   #status {
     position: absolute;
-    bottom: 28px;
+    bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    color: rgba(0,255,200,0.55);
-    font-size: 11px;
-    letter-spacing: 0.25em;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    text-shadow: 0 0 12px rgba(0,255,200,0.4);
     white-space: nowrap;
     transition: opacity 0.5s ease;
+    padding: 8px 24px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
   #title {
     position: absolute;
-    top: 22px;
+    top: 32px;
     left: 50%;
     transform: translateX(-50%);
-    color: rgba(0,255,220,0.45);
-    font-size: 12px;
-    letter-spacing: 0.4em;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5em;
     text-transform: uppercase;
-    text-shadow: 0 0 20px rgba(0,255,220,0.3);
     white-space: nowrap;
   }
   #hand-count {
     position: absolute;
-    top: 50px;
+    top: 64px;
     left: 50%;
     transform: translateX(-50%);
-    color: rgba(200,0,255,0.4);
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-shadow: 0 0 10px rgba(200,0,255,0.3);
+    color: #8b5cf6;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
   }
   #fps-counter {
     position: absolute;
-    top: 22px;
-    right: 22px;
-    color: rgba(0,255,150,0.5);
+    top: 32px;
+    right: 32px;
+    color: #10b981;
     font-size: 10px;
-    letter-spacing: 0.2em;
+    font-weight: 600;
+    letter-spacing: 0.1em;
     display: none;
   }
   #mode-indicator {
     position: absolute;
-    bottom: 55px;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
-    color: rgba(255,200,0,0.7);
-    font-size: 10px;
+    color: #f59e0b;
+    font-size: 11px;
+    font-weight: 700;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    text-shadow: 0 0 15px rgba(255,200,0,0.5);
     white-space: nowrap;
     opacity: 0;
     transition: opacity 0.5s ease;
   }
   #key-hints {
     position: absolute;
-    bottom: 28px;
-    right: 22px;
-    color: rgba(100,100,150,0.4);
-    font-size: 9px;
-    letter-spacing: 0.15em;
+    bottom: 40px;
+    right: 32px;
+    color: #94a3b8;
+    font-size: 10px;
+    letter-spacing: 0.1em;
     text-align: right;
-    line-height: 1.7;
+    line-height: 1.8;
     text-transform: uppercase;
   }
   #loading-screen {
     position: fixed;
     inset: 0;
     z-index: 99;
-    background: #000;
+    background: #f8fafc;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -227,34 +233,33 @@
   }
   #loading-screen.hidden { opacity: 0; pointer-events: none; }
   .loader-title {
-    color: #00ffe0;
-    font-family: 'Courier New', monospace;
-    font-size: 18px;
-    letter-spacing: 0.5em;
+    color: #1e293b;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 0.4em;
     text-transform: uppercase;
-    text-shadow: 0 0 30px rgba(0,255,220,0.8);
     animation: pulse 2s ease-in-out infinite;
   }
   .loader-sub {
-    color: rgba(255,0,255,0.7);
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    letter-spacing: 0.35em;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
   }
   .loader-bar-wrap {
-    width: 240px; height: 2px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px; overflow: hidden;
+    width: 280px; height: 4px;
+    background: #e2e8f0;
+    border-radius: 4px; overflow: hidden;
   }
   .loader-bar {
     height: 100%; width: 0%;
-    background: linear-gradient(90deg, #00ffe0, #ff00ff);
-    border-radius: 2px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
     transition: width 0.4s ease;
-    box-shadow: 0 0 12px rgba(0,255,220,0.8);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
   }
-  @keyframes pulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+  @keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
   /* CRT scanlines overlay */
   #crt-overlay {
     position: fixed;
@@ -267,8 +272,8 @@
       0deg,
       transparent,
       transparent 2px,
-      rgba(0,0,0,0.18) 2px,
-      rgba(0,0,0,0.18) 4px
+      rgba(255,255,255,0.2) 2px,
+      rgba(255,255,255,0.2) 4px
     );
   }
   #crt-overlay.active { opacity: 1; }
@@ -320,7 +325,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 const state = {
   hands: [],
-  particles: [],      // explosion + trail + ambient
+  particles: [],      
   ambientParticles: [],
   frame: 0,
   ready: false,
@@ -328,11 +333,11 @@ const state = {
   showCRT: false,
   fps: 60,
   fpsHistory: [],
-  perfMode: false,    // reduced quality when FPS < 30
-  prevTips: [],       // previous fingertip positions per hand
-  ripples: [],        // wave ripples along strings
-  gestureAlpha: {},   // fade in/out for mode indicators
-  lightDots: [],      // traveling lights on strings
+  perfMode: false,    
+  prevHands: [],       
+  ripples: [],        
+  gestureAlpha: {},   
+  lightDots: [],      
 };
 
 const FINGERTIPS = [4, 8, 12, 16, 20];
@@ -460,7 +465,19 @@ function onHandsResults(results) {
       const lm = results.multiHandLandmarks[i];
       const label = results.multiHandedness[i]?.label || 'Unknown';
       const mirroredLabel = label === 'Left' ? 'Right' : 'Left';
-      state.hands.push({ landmarks: lm, label: mirroredLabel });
+      
+      let velocity = { x: 0, y: 0 };
+      const prevHand = prevHands.find(h => h.label === mirroredLabel);
+      if (prevHand) {
+        velocity.x = lm[0].x - prevHand.landmarks[0].x;
+        velocity.y = lm[0].y - prevHand.landmarks[0].y;
+      }
+
+      state.hands.push({ 
+        landmarks: lm, 
+        label: mirroredLabel,
+        velocity: velocity 
+      });
     }
   }
 }
@@ -478,7 +495,7 @@ const sketch = (p) => {
   // ── Stars ──────────────────────────────────────────────────────────────
   function initStars() {
     stars = [];
-    const count = 180;
+    const count = 100;
     for (let i = 0; i < count; i++) {
       stars.push({
         x: Math.random() * W,
@@ -494,7 +511,7 @@ const sketch = (p) => {
   // ── Ambient particles ──────────────────────────────────────────────────
   function initAmbientParticles() {
     state.ambientParticles = [];
-    const count = 175;
+    const count = 120;
     for (let i = 0; i < count; i++) {
       state.ambientParticles.push(makeAmbientParticle());
     }
@@ -538,6 +555,11 @@ const sketch = (p) => {
   // ────────────────────────────────────────────────────────────────────────
   p.draw = () => {
     state.frame++;
+
+    // Cache screen landmarks once per frame
+    for (const hand of state.hands) {
+      hand.screenLandmarks = hand.landmarks.map(lm => lmToScreen(lm, W, H));
+    }
 
     // FPS tracking
     const now = performance.now();
@@ -586,9 +608,9 @@ const sketch = (p) => {
 
     // Compute palm positions and sizes for depth
     const palmData = hands.map(hand => {
-      const palm = lmToScreen(hand.landmarks[0], W, H);
-      const wrist = lmToScreen(hand.landmarks[0], W, H);
-      const mid = lmToScreen(hand.landmarks[9], W, H);
+      const palm = hand.screenLandmarks[0];
+      const wrist = hand.screenLandmarks[0];
+      const mid = hand.screenLandmarks[9];
       const handSize = p.dist(wrist.x, wrist.y, mid.x, mid.y);
       return { palm, handSize };
     });
@@ -610,14 +632,14 @@ const sketch = (p) => {
       // Gesture: peace sign
       const isPeace = detectPeace(hand.landmarks);
       // Gesture: pinch
-      const isPinch = detectPinch(hand.landmarks, W, H);
+      const isPinch = detectPinch(hand.landmarks, W, H, hand);
 
       if (isPeace) {
         drawConstellationLines(hand, p, W, H, depthScale);
         showModeIndicator('✦ CONSTELLATION ✦');
       }
       if (isPinch) {
-        triggerPinchBurst(hand.landmarks, p, W, H);
+        triggerPinchBurst(hand.landmarks, p, W, H, hand);
         showModeIndicator('✦ PINCH BURST ✦');
       }
 
@@ -647,37 +669,20 @@ const sketch = (p) => {
 
   // ── Background ──────────────────────────────────────────────────────────
   function drawBackground(p, W, H) {
-    // Dark gradient: #0a0a2e → #000010
     p.push();
-    p.colorMode(p.RGB, 255);
-    // Draw gradient rects top to bottom
-    for (let y = 0; y < H; y += 4) {
-      const t = y / H;
-      const r = p.lerp(10, 0, t);
-      const g = p.lerp(10, 0, t);
-      const bv = p.lerp(46, 16, t);
-      p.noStroke();
-      p.fill(r, g, bv, 255);
-      p.rect(0, y, W, 5);
+    if (state.perfMode) {
+      p.clear();
+    } else {
+      // Very light fade for trail effect
+      p.colorMode(p.RGB, 255);
+      p.fill(248, 250, 252, 40); // Matches #f8fafc
+      p.rect(0, 0, W, H);
     }
-    // Semi-transparent overlay for trail effect
-    p.fill(0, 0, 8, 120);
-    p.rect(0, 0, W, H);
     p.pop();
   }
 
   function drawVignette(p, W, H) {
-    p.push();
-    p.colorMode(p.RGB, 255);
-    p.noStroke();
-    // Radial vignette
-    for (let r = Math.max(W, H) * 0.9; r > 0; r -= 8) {
-      const t = r / (Math.max(W, H) * 0.9);
-      const alpha = (1 - t) * (1 - t) * 90;
-      p.fill(0, 0, 0, alpha);
-      p.ellipse(W/2, H/2, r * 2, r * 2);
-    }
-    p.pop();
+    // Handled via CSS radial-gradient for performance
   }
 
   // ── Starfield ───────────────────────────────────────────────────────────
@@ -686,13 +691,15 @@ const sketch = (p) => {
     p.colorMode(p.RGB, 255);
     p.noStroke();
     const t = state.frame;
-    for (const s of stars) {
+    const sCount = state.perfMode ? stars.length / 2 : stars.length;
+    for (let i = 0; i < sCount; i++) {
+      const s = stars[i];
       const twinkle = 0.5 + 0.5 * Math.sin(t * s.twinkleSpeed + s.twinkleOffset);
-      const alpha = s.brightness * twinkle * 200 + 20;
-      const sz = s.size * (0.7 + 0.5 * twinkle);
-      p.fill(180, 200, 255, alpha * 0.4);
-      p.ellipse(s.x, s.y, sz * 3, sz * 3);
-      p.fill(220, 230, 255, alpha);
+      const alpha = s.brightness * twinkle * 150 + 50;
+      const sz = s.size * (0.8 + 0.4 * twinkle);
+      
+      // Data-dot style: small circles with subtle shadow
+      p.fill(100, 140, 255, alpha * 0.4);
       p.ellipse(s.x, s.y, sz, sz);
     }
     p.pop();
@@ -700,8 +707,8 @@ const sketch = (p) => {
 
   // ── Ambient particles ───────────────────────────────────────────────────
   function updateAmbientParticles(p, hands, W, H) {
-    if (state.perfMode && state.ambientParticles.length > 80) {
-      state.ambientParticles.splice(80);
+    if (state.perfMode && state.ambientParticles.length > 60) {
+      state.ambientParticles.splice(60);
     }
     for (const ap of state.ambientParticles) {
       // Gentle drift
@@ -712,15 +719,18 @@ const sketch = (p) => {
 
       // Swirl toward nearest hand
       if (hands.length > 0) {
-        let minDist = Infinity;
+        let minD2 = Infinity;
         let nearPalm = null;
         for (const h of hands) {
-          const palm = lmToScreen(h.landmarks[0], W, H);
-          const d = Math.hypot(ap.x - palm.x, ap.y - palm.y);
-          if (d < minDist) { minDist = d; nearPalm = palm; }
+          const palm = h.screenLandmarks[0];
+          const dx = ap.x - palm.x;
+          const dy = ap.y - palm.y;
+          const d2 = dx*dx + dy*dy;
+          if (d2 < minD2) { minD2 = d2; nearPalm = palm; }
         }
-        if (nearPalm && minDist < 250) {
-          const strength = p.map(minDist, 0, 250, 0.12, 0.005, true);
+        if (nearPalm && minD2 < 62500) {
+          const d = Math.sqrt(minD2);
+          const strength = p.map(d, 0, 250, 0.12, 0.005, true);
           ap.vx += (nearPalm.x - ap.x) * strength;
           ap.vy += (nearPalm.y - ap.y) * strength;
         }
@@ -740,10 +750,8 @@ const sketch = (p) => {
       p.colorMode(p.RGB, 255);
       p.noStroke();
       const bright = ap.brightness * 180;
-      p.fill(0, 180, 255, bright * 0.2);
-      p.ellipse(ap.x, ap.y, ap.size * 4, ap.size * 4);
-      p.fill(120, 200, 255, bright);
-      p.ellipse(ap.x, ap.y, ap.size, ap.size);
+      p.fill(139, 92, 246, bright * 0.3); // Violet
+      p.ellipse(ap.x, ap.y, ap.size * 2.5, ap.size * 2.5);
       p.pop();
     }
   }
@@ -753,7 +761,7 @@ const sketch = (p) => {
   function drawFingertipTrails(hand, hi, p, W, H) {
     for (let ti = 0; ti < FINGERTIPS.length; ti++) {
       const tipIdx = FINGERTIPS[ti];
-      const cur = lmToScreen(hand.landmarks[tipIdx], W, H);
+      const cur = hand.screenLandmarks[tipIdx];
       const key = `${hi}_${ti}`;
       if (!tipTrails[key]) tipTrails[key] = [];
       const trail = tipTrails[key];
@@ -780,22 +788,8 @@ const sketch = (p) => {
         pt.life -= 0.06;
         if (pt.life <= 0) { trail.splice(i, 1); continue; }
         const sz = pt.life * 6;
-        p.fill(0, 200 + pt.life * 55, 255, pt.life * 120);
+        p.fill(59, 130, 246, pt.life * 100); // Blue-500
         p.ellipse(pt.x, pt.y, sz, sz);
-
-        // Spawn ambient-style trail particle occasionally
-        if (Math.random() < 0.3 && state.particles.length < MAX_PARTICLES) {
-          state.particles.push({
-            x: pt.x + (Math.random()-0.5)*4,
-            y: pt.y + (Math.random()-0.5)*4,
-            vx: (Math.random()-0.5)*1.5,
-            vy: (Math.random()-0.5)*1.5 - 0.5,
-            r: 0, g: 200, b: 255,
-            life: 0.6,
-            size: Math.random()*3+1,
-            type: 'trail'
-          });
-        }
       }
       p.pop();
 
@@ -808,57 +802,36 @@ const sketch = (p) => {
 
   // ── Strings ──────────────────────────────────────────────────────────────
   function drawStrings(handA, handB, palmData, p, W, H) {
-    const tipsA = FINGERTIPS.map(i => lmToScreen(handA.landmarks[i], W, H));
-    const tipsB = FINGERTIPS.map(i => lmToScreen(handB.landmarks[i], W, H));
-    const palmA = palmData[0].palm;
-    const palmB = palmData[1].palm;
+    const tipsA = FINGERTIPS.map(i => handA.screenLandmarks[i]);
+    const tipsB = FINGERTIPS.map(i => handB.screenLandmarks[i]);
+    const palmA = handA.screenLandmarks[0];
+    const palmB = handB.screenLandmarks[0];
     const palmDist = p.dist(palmA.x, palmA.y, palmB.x, palmB.y);
     const maxDist = Math.sqrt(W * W + H * H) * 0.6;
     const tension = p.constrain(1 - palmDist / maxDist, 0, 1);
 
-    // Color: warm (magenta) when close, cool (cyan) when far
-    const colorT = tension; // 1=close=warm, 0=far=cool
+    // Color: warm (indigo/violet) when close, cool (blue/cyan) when far
+    const colorT = tension; 
 
-    const numStrings = state.perfMode ? 1 : p.floor(p.map(tension, 0, 1, 3, 5));
+    let numStrings = p.floor(p.map(tension, 0, 1, 3, 5));
+    if (state.perfMode) numStrings = 1;
 
     for (let fi = 0; fi < FINGERTIPS.length; fi++) {
       const a = tipsA[fi];
       const b = tipsB[fi];
       const d = p.dist(a.x, a.y, b.x, b.y);
 
-      // Base color — cyan (far) to magenta (close)
-      const baseHue = p.lerp(185, 300, colorT); // cyan≈185, magenta≈300
-      const sat = p.lerp(70, 100, colorT);
-      const bri = p.lerp(65, 100, tension);
+      // Prism palette for light theme
+      const baseHue = p.lerp(210, 280, colorT); // Blue to Purple
+      const sat = 85;
+      const bri = p.lerp(40, 70, tension);
 
-      // Thickness based on distance
-      const baseThick = p.map(tension, 0, 1, 0.7, 3.5);
+      const baseThick = p.map(tension, 0, 1, 1.2, 4.5);
 
-      // Draw parallel strings with weave
       for (let si = 0; si < numStrings; si++) {
         const offset = (si - (numStrings - 1) / 2) * p.map(tension, 0, 1, 2.5, 1.2);
         const weaveAmp = p.map(tension, 0, 1, 6, 2);
-        drawWovenString(p, a, b, offset, weaveAmp, fi, si, baseHue, sat, bri, baseThick, tension, colorT, d, palmDist);
-      }
-
-      // Cross-web connections between adjacent fingers
-      if (fi < FINGERTIPS.length - 1) {
-        const nextA = tipsA[fi + 1];
-        const nextB = tipsB[fi + 1];
-        const midA = { x: (a.x + nextA.x) * 0.5, y: (a.y + nextA.y) * 0.5 };
-        const midB = { x: (b.x + nextB.x) * 0.5, y: (b.y + nextB.y) * 0.5 };
-        p.push();
-        p.colorMode(p.HSB, 360, 100, 100, 100);
-        p.stroke(baseHue, sat * 0.6, bri * 0.5, 15);
-        p.strokeWeight(baseThick * 0.35);
-        p.noFill();
-        p.line(midA.x, midA.y, midB.x, midB.y);
-        p.pop();
-      }
-
-      // Contact burst
-      if (d < 28) {
-        spawnContactBurst(a.x, a.y, baseHue, colorT, 8);
+        drawWovenString(p, a, b, offset, weaveAmp, fi, si, baseHue, sat, bri, baseThick, tension, colorT, d, palmDist, handA, handB);
       }
     }
 
@@ -866,90 +839,50 @@ const sketch = (p) => {
     p.push();
     p.colorMode(p.RGB, 255);
     p.noFill();
-    p.strokeWeight(p.lerp(0.5, 1.5, tension));
-    p.stroke(200, 200, 255, 40 + tension * 40);
+    p.strokeWeight(p.lerp(0.8, 2, tension));
+    p.stroke(71, 85, 105, 40 + tension * 40); // slate-600
     p.line(palmA.x, palmA.y, palmB.x, palmB.y);
     p.pop();
 
-    // Traveling light dots on strings
-    if (state.frame % 12 === 0 && !state.perfMode) {
-      for (let fi = 0; fi < FINGERTIPS.length; fi++) {
-        if (Math.random() < 0.5) {
-          const baseHue2 = p.lerp(185, 300, colorT);
-          state.lightDots.push({
-            fromA: { ...tipsA[fi] },
-            fromB: { ...tipsB[fi] },
-            t: 0,
-            speed: 0.012 + Math.random() * 0.01,
-            hue: baseHue2 + (Math.random()-0.5)*30,
-            size: 3 + Math.random() * 3,
-            fi,
-          });
-        }
-      }
-      if (state.lightDots.length > 60) state.lightDots.splice(0, 20);
-    }
-
-    // Draw ripple waves on strings
     updateRipples(tipsA, tipsB, p, tension, colorT);
   }
 
-  function drawWovenString(p, a, b, offset, weaveAmp, fi, si, hue, sat, bri, thick, tension, colorT, dist, palmDist) {
-    const steps = 30;
+  function drawWovenString(p, a, b, offset, weaveAmp, fi, si, hue, sat, bri, thick, tension, colorT, dist, palmDist, handA, handB) {
+    const steps = state.perfMode ? 8 : 16; 
     const t = state.frame * 0.04 + fi * 0.8 + si * 1.1;
-    const sagAmount = p.lerp(12, 3, tension);
-    const alpha = p.lerp(35, 90, tension);
+    const velY = (handA.velocity.y + handB.velocity.y) * 40; 
+    const sagAmount = p.lerp(12, 3, tension) + velY;
+    const alpha = p.lerp(60, 100, tension);
 
     p.push();
     p.colorMode(p.HSB, 360, 100, 100, 100);
     p.noFill();
 
-    // Chromatic aberration: draw R, G, B channels with slight offset
-    const caOffset = state.perfMode ? 0 : p.lerp(0, 2.5, 1 - tension);
-    const channels = state.perfMode
-      ? [{ dr: 0, dg: 0, hShift: 0, aScale: 1.0 }]
-      : [
-          { dr: -caOffset, dg: 0, hShift: -20, aScale: 0.4 },
-          { dr: 0,         dg: 0, hShift: 0,   aScale: 1.0 },
-          { dr: caOffset,  dg: 0, hShift: 20,  aScale: 0.4 },
-        ];
+    // High-performance dual-pass glow
+    const passes = state.perfMode ? [{ w: thick, a: alpha }] : [
+      { w: thick * 3.5, a: alpha * 0.15 }, 
+      { w: thick, a: alpha }
+    ];
 
-    for (const ch of channels) {
-      p.stroke(hue + ch.hShift, sat, bri, alpha * ch.aScale);
-      p.strokeWeight(thick * (ch.aScale === 1 ? 1 : 0.6));
+    for (const pass of passes) {
+      p.stroke(hue, sat, bri, pass.a);
+      p.strokeWeight(pass.w);
       p.beginShape();
       for (let step = 0; step <= steps; step++) {
         const frac = step / steps;
-        // Interpolate base position
-        const bx = p.lerp(a.x, b.x, frac) + ch.dr;
+        const bx = p.lerp(a.x, b.x, frac);
         const by = p.lerp(a.y, b.y, frac);
-        // Perpendicular offset for parallel strings
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const len = Math.hypot(dx, dy) || 1;
         const px = -dy / len * offset;
         const py = dx / len * offset;
-        // Sag + weave
         const sag = Math.sin(frac * Math.PI) * sagAmount;
         const weave = Math.sin(frac * Math.PI * 2 + t) * weaveAmp * Math.sin(frac * Math.PI);
-        p.curveVertex(bx + px + weave, by + py + sag);
+        p.vertex(bx + px + weave, by + py + sag);
       }
       p.endShape();
     }
-
-    // Glow pass
-    p.stroke(hue, sat * 0.8, bri, alpha * 0.15);
-    p.strokeWeight(thick * 4);
-    p.beginShape();
-    for (let step = 0; step <= steps; step += 3) {
-      const frac = step / steps;
-      const bx = p.lerp(a.x, b.x, frac);
-      const by = p.lerp(a.y, b.y, frac);
-      const sag = Math.sin(frac * Math.PI) * sagAmount;
-      p.curveVertex(bx, by + sag);
-    }
-    p.endShape();
-
     p.pop();
   }
 
@@ -963,13 +896,14 @@ const sketch = (p) => {
       const frac = ld.t;
       const x = p.lerp(ld.fromA.x, ld.fromB.x, frac);
       const y = p.lerp(ld.fromA.y, ld.fromB.y, frac)
-              + Math.sin(frac * Math.PI) * 8; // follow sag
+              + Math.sin(frac * Math.PI) * 8; 
       const fade = Math.sin(frac * Math.PI);
+      
       p.noStroke();
-      p.fill(ld.hue, 60, 100, fade * 60);
-      p.ellipse(x, y, ld.size * 3, ld.size * 3);
-      p.fill(ld.hue, 30, 100, fade * 90);
+      p.fill(ld.hue, 80, 80, fade * 80);
       p.ellipse(x, y, ld.size, ld.size);
+      p.fill(255, 255, 255, fade * 200);
+      p.ellipse(x, y, ld.size * 0.4, ld.size * 0.4);
     }
     p.pop();
   }
@@ -983,20 +917,17 @@ const sketch = (p) => {
       r.radius += 6;
       if (r.life <= 0) { state.ripples.splice(i, 1); continue; }
       p.noFill();
-      const hue = p.lerp(185, 300, colorT);
-      p.stroke(hue, 80, 100, r.life * 50);
+      const hue = p.lerp(210, 280, colorT);
+      p.stroke(hue, 60, 60, r.life * 60);
       p.strokeWeight(1);
       p.ellipse(r.x, r.y, r.radius * 2, r.radius * 2);
-      p.stroke(hue, 60, 100, r.life * 25);
-      p.strokeWeight(2);
-      p.ellipse(r.x, r.y, r.radius * 3, r.radius * 3);
     }
     p.pop();
   }
 
   // ── Hand silhouette ───────────────────────────────────────────────────────
   function drawHandSilhouette(hand, p, W, H, depthScale) {
-    const lm = hand.landmarks;
+    const lm = hand.screenLandmarks;
     const connections = [
       [0,1],[1,2],[2,3],[3,4],
       [0,5],[5,6],[6,7],[7,8],
@@ -1008,15 +939,15 @@ const sketch = (p) => {
     p.push();
     p.colorMode(p.RGB, 255);
     p.noFill();
-    // Outer glow silhouette
+    // Soft, glassy silhouette
     for (const [ai, bi] of connections) {
-      const pa = lmToScreen(lm[ai], W, H);
-      const pb = lmToScreen(lm[bi], W, H);
-      p.strokeWeight(8 * depthScale);
-      p.stroke(0, 100, 180, 15 * depthScale);
+      const pa = lm[ai];
+      const pb = lm[bi];
+      p.strokeWeight(12 * depthScale);
+      p.stroke(255, 255, 255, 20 * depthScale);
       p.line(pa.x, pa.y, pb.x, pb.y);
-      p.strokeWeight(4 * depthScale);
-      p.stroke(0, 150, 220, 25 * depthScale);
+      p.strokeWeight(2 * depthScale);
+      p.stroke(59, 130, 246, 30 * depthScale); // blue-500
       p.line(pa.x, pa.y, pb.x, pb.y);
     }
     p.pop();
@@ -1024,7 +955,7 @@ const sketch = (p) => {
 
   // ── Hand skeleton ────────────────────────────────────────────────────────
   function drawHandSkeleton(hand, p, W, H, depthScale) {
-    const lm = hand.landmarks;
+    const lm = hand.screenLandmarks;
     const connections = [
       [0,1],[1,2],[2,3],[3,4],
       [0,5],[5,6],[6,7],[7,8],
@@ -1035,57 +966,54 @@ const sketch = (p) => {
     ];
     p.push();
     p.colorMode(p.RGB, 255);
-    p.noFill();
-    for (const [ai, bi] of connections) {
-      const pa = lmToScreen(lm[ai], W, H);
-      const pb = lmToScreen(lm[bi], W, H);
-      p.strokeWeight(1.5 * depthScale);
-      p.stroke(0, 200, 255, 55 * depthScale);
-      p.line(pa.x, pa.y, pb.x, pb.y);
-      p.strokeWeight(0.5);
-      p.stroke(0, 255, 200, 25);
-      p.line(pa.x, pa.y, pb.x, pb.y);
+    p.noStroke();
+    if (!state.perfMode) {
+      p.noFill();
+      for (const [ai, bi] of connections) {
+        const pa = lm[ai];
+        const pb = lm[bi];
+        p.strokeWeight(1 * depthScale);
+        p.stroke(148, 163, 184, 80 * depthScale); // slate-400
+        p.line(pa.x, pa.y, pb.x, pb.y);
+      }
     }
     p.pop();
   }
 
   // ── Joint dots with breathing ───────────────────────────────────────────
   function drawJointDots(hand, p, W, H, depthScale) {
-    const lm = hand.landmarks;
+    const lm = hand.screenLandmarks;
     const TIP_COLORS = [
-      [255, 50, 180],   // thumb
-      [0, 255, 100],    // index
-      [0, 200, 255],    // middle
-      [255, 0, 255],    // ring
-      [255, 220, 0],    // pinky
+      [236, 72, 153],   // pink-500 (thumb)
+      [59, 130, 246],    // blue-500
+      [139, 92, 246],    // violet-500
+      [16, 185, 129],    // emerald-500
+      [245, 158, 11],    // amber-500
     ];
     for (let idx = 0; idx < JOINTS.length; idx++) {
       const jIdx = JOINTS[idx];
-      const pt = lmToScreen(lm[jIdx], W, H);
+      const pt = lm[jIdx];
       const isTip = FINGERTIPS.includes(jIdx);
-      const pulse = 1 + 0.28 * Math.sin(state.frame * 0.09 + jIdx * 0.5);
+      const pulse = 1 + 0.15 * Math.sin(state.frame * 0.1 + jIdx * 0.5);
 
       p.push();
       p.colorMode(p.RGB, 255);
       p.noStroke();
       if (isTip) {
         const tipIdx = FINGERTIPS.indexOf(jIdx);
-        const [r, g, bv] = TIP_COLORS[tipIdx];
+        const [r, g, b] = TIP_COLORS[tipIdx];
         const ds = depthScale;
-        p.fill(r, g, bv, 20);
-        p.ellipse(pt.x, pt.y, 30 * pulse * ds, 30 * pulse * ds);
-        p.fill(r, g, bv, 60);
-        p.ellipse(pt.x, pt.y, 16 * pulse * ds, 16 * pulse * ds);
-        p.fill(r, g, bv, 200);
-        p.ellipse(pt.x, pt.y, 6 * pulse * ds, 6 * pulse * ds);
-        p.fill(255, 255, 255, 180);
-        p.ellipse(pt.x, pt.y, 2.5, 2.5);
+        
+        // Inner shadow/glow for crystal look
+        p.fill(r, g, b, 40);
+        p.ellipse(pt.x, pt.y, 24 * pulse * ds, 24 * pulse * ds);
+        p.fill(r, g, b, 200);
+        p.ellipse(pt.x, pt.y, 8 * pulse * ds, 8 * pulse * ds);
+        p.fill(255, 255, 255, 220);
+        p.ellipse(pt.x - 1, pt.y - 1, 2, 2); // highlight
       } else {
-        const a = 0.3 + 0.7 * (jIdx / 20);
-        p.fill(0, 200, 255, 35 * a * depthScale);
-        p.ellipse(pt.x, pt.y, 9 * pulse, 9 * pulse);
-        p.fill(0, 255, 220, 100 * a * depthScale);
-        p.ellipse(pt.x, pt.y, 3.5, 3.5);
+        p.fill(100, 116, 139, 100 * depthScale); // slate-500
+        p.ellipse(pt.x, pt.y, 4, 4);
       }
       p.pop();
     }
@@ -1093,26 +1021,22 @@ const sketch = (p) => {
 
   // ── Palm radial pulse ──────────────────────────────────────────────────
   function drawPalmPulse(palm, p, depthScale, handIdx) {
-    const t = state.frame * 0.06 + handIdx * Math.PI;
-    const r1 = 30 + 15 * Math.sin(t);
-    const r2 = 55 + 20 * Math.sin(t + 1);
-    const r3 = 80 + 25 * Math.sin(t + 2);
+    const t = state.frame * 0.05 + handIdx * Math.PI;
+    const r1 = 30 + 10 * Math.sin(t);
+    const r2 = 60 + 15 * Math.sin(t + 1);
     p.push();
     p.colorMode(p.RGB, 255);
     p.noFill();
-    p.strokeWeight(1);
-    p.stroke(0, 180, 255, 25 * depthScale);
+    p.strokeWeight(0.5);
+    p.stroke(148, 163, 184, 40 * depthScale); // slate-400
     p.ellipse(palm.x, palm.y, r1 * 2 * depthScale, r1 * 2 * depthScale);
-    p.stroke(0, 140, 220, 15 * depthScale);
+    p.stroke(148, 163, 184, 20 * depthScale);
     p.ellipse(palm.x, palm.y, r2 * 2 * depthScale, r2 * 2 * depthScale);
-    p.stroke(0, 100, 180, 8 * depthScale);
-    p.ellipse(palm.x, palm.y, r3 * 2 * depthScale, r3 * 2 * depthScale);
     p.pop();
   }
 
   // ── Gesture: Peace = constellation ───────────────────────────────────
   function detectPeace(lm) {
-    // Index (8) and middle (12) tips above MCP; ring (16) and pinky (20) below MCP
     const is8Up  = lm[8].y  < lm[6].y;
     const is12Up = lm[12].y < lm[10].y;
     const is16Dn = lm[16].y > lm[14].y;
@@ -1121,20 +1045,24 @@ const sketch = (p) => {
   }
 
   function drawConstellationLines(hand, p, W, H, depthScale) {
-    const lm = hand.landmarks;
+    const lm = hand.screenLandmarks;
     p.push();
     p.colorMode(p.HSB, 360, 100, 100, 100);
     p.noFill();
+    const maxD2 = 14400; 
     for (let a = 0; a < lm.length; a++) {
       for (let b = a + 1; b < lm.length; b++) {
-        const pa = lmToScreen(lm[a], W, H);
-        const pb = lmToScreen(lm[b], W, H);
-        const d = p.dist(pa.x, pa.y, pb.x, pb.y);
-        if (d < 120) {
-          const alpha = p.map(d, 0, 120, 40, 5) * depthScale;
-          const hue = (state.frame * 1.5 + a * 20) % 360;
-          p.stroke(hue, 70, 100, alpha);
-          p.strokeWeight(0.5);
+        const pa = lm[a];
+        const pb = lm[b];
+        const dx = pa.x - pb.x;
+        const dy = pa.y - pb.y;
+        const d2 = dx*dx + dy*dy;
+        if (d2 < maxD2) {
+          const d = Math.sqrt(d2);
+          const alpha = p.map(d, 0, 120, 60, 10) * depthScale;
+          const hue = (state.frame * 2 + a * 30) % 360;
+          p.stroke(hue, 60, 60, alpha);
+          p.strokeWeight(1);
           p.line(pa.x, pa.y, pb.x, pb.y);
         }
       }
@@ -1143,20 +1071,21 @@ const sketch = (p) => {
   }
 
   // ── Gesture: Pinch ──────────────────────────────────────────────────────
-  function detectPinch(lm, W, H) {
-    const thumb = lmToScreen(lm[4], W, H);
-    const index = lmToScreen(lm[8], W, H);
-    const d = Math.hypot(thumb.x - index.x, thumb.y - index.y);
-    return d < 32;
+  function detectPinch(lm, W, H, hand) {
+    const thumb = hand.screenLandmarks[4];
+    const index = hand.screenLandmarks[8];
+    const dx = thumb.x - index.x;
+    const dy = thumb.y - index.y;
+    return (dx*dx + dy*dy) < 1024; // 32^2
   }
 
   let lastPinchBurst = 0;
-  function triggerPinchBurst(lm, p, W, H) {
+  function triggerPinchBurst(lm, p, W, H, hand) {
     const now = state.frame;
     if (now - lastPinchBurst < 15) return;
     lastPinchBurst = now;
-    const thumb = lmToScreen(lm[4], W, H);
-    const index = lmToScreen(lm[8], W, H);
+    const thumb = hand.screenLandmarks[4];
+    const index = hand.screenLandmarks[8];
     const cx = (thumb.x + index.x) / 2;
     const cy = (thumb.y + index.y) / 2;
     spawnContactBurst(cx, cy, 55, 0.5, 45); // golden burst
@@ -1168,17 +1097,14 @@ const sketch = (p) => {
     const actual = Math.min(count, MAX_PARTICLES - state.particles.length);
     for (let i = 0; i < actual; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 5 + 1.5;
-      // Convert HSB hue to rough RGB
-      const rr = hue < 180 ? 255 : (hue < 240 ? p5Instance ? 0 : 0 : 200);
+      const speed = Math.random() * 6 + 2;
       state.particles.push({
         x, y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        hue,
-        r: 0, g: 200, b: 255,
+        hue: (hue + (Math.random()-0.5)*40) % 360,
         life: 1.0,
-        size: Math.random() * 5 + 2,
+        size: Math.random() * 4 + 2,
         type: 'burst',
       });
     }
@@ -1186,30 +1112,27 @@ const sketch = (p) => {
 
   // ── Particles ─────────────────────────────────────────────────────────────
   function updateParticles(p) {
+    p.push();
+    p.colorMode(p.HSB, 360, 100, 100, 100);
+    p.noStroke();
     for (let i = state.particles.length - 1; i >= 0; i--) {
       const pt = state.particles[i];
       pt.x += pt.vx;
       pt.y += pt.vy;
-      pt.vx *= 0.91;
-      pt.vy *= 0.91;
-      pt.vy += 0.06;
-      pt.life -= pt.type === 'trail' ? 0.06 : 0.025;
+      pt.vx *= 0.94;
+      pt.vy *= 0.94;
+      pt.vy += 0.1; // gravity
+      pt.life -= 0.025;
       if (pt.life <= 0) { state.particles.splice(i, 1); continue; }
 
-      p.push();
-      p.colorMode(p.HSB, 360, 100, 100, 100);
-      p.noStroke();
-      const h = pt.hue !== undefined ? pt.hue : 190;
-      p.fill(h, 80, 100, pt.life * 40);
-      p.ellipse(pt.x, pt.y, pt.size * pt.life * 3, pt.size * pt.life * 3);
-      p.fill(h, 60, 100, pt.life * 80);
-      p.ellipse(pt.x, pt.y, pt.size * pt.life, pt.size * pt.life);
-      p.fill(h, 20, 100, pt.life * 60);
-      p.ellipse(pt.x, pt.y, pt.size * pt.life * 0.3, pt.size * pt.life * 0.3);
-      p.pop();
+      const h = pt.hue !== undefined ? pt.hue : 220;
+      p.fill(h, 70, 70, pt.life * 60);
+      
+      // Prism shard look (simplified for performance)
+      p.rect(pt.x - pt.size/2, pt.y - pt.size/2, pt.size, pt.size);
     }
+    p.pop();
 
-    // Cap
     if (state.particles.length > MAX_PARTICLES) {
       state.particles.splice(0, state.particles.length - MAX_PARTICLES);
     }
